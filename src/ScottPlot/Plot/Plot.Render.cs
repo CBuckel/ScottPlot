@@ -57,10 +57,10 @@ namespace ScottPlot
         /// </summary>
         /// <param name="gfx">an existing Graphics element to render onto</param>
         /// <param name="rectPrintArea">Area where to render the plot</param>
-        public void Render(Graphics gfx, RectangleF rectPrintArea)
+        public void Render(Graphics gfx, Rectangle rectPrintArea)
         {
             settings.BenchmarkMessage.Restart();
-            settings.Resize((int)(rectPrintArea.Width), (int)(rectPrintArea.Height), (int)(rectPrintArea.X), (int)(rectPrintArea.Y));
+            settings.Resize(rectPrintArea.Width, rectPrintArea.Height, rectPrintArea.X, rectPrintArea.Y);
             settings.CopyPrimaryLayoutToAllAxes();
             settings.AxisAutoUnsetAxes();
             settings.EnforceEqualAxisScales();
@@ -80,6 +80,8 @@ namespace ScottPlot
                 RenderPlottables(gfx, 1);
                 RenderAfterPlottables(gfx, primaryDims);
             }
+            gfx.ResetTransform();
+            gfx.ResetClip();
         }
 
         private void RenderClear(Graphics gfx, PlotDimensions primaryDims)
