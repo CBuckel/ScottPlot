@@ -271,7 +271,7 @@ namespace ScottPlot
         /// <summary>
         /// Automatically adjust X and Y axis limits of all axes to fit the data
         /// </summary>
-        public void AxisAutoAll(double horizontalMargin = .1, double verticalMargin = .1)
+        public void AxisAutoAll(double? horizontalMargin = null, double? verticalMargin = null)
         {
             AxisAutoAllX(horizontalMargin);
             AxisAutoAllY(verticalMargin);
@@ -280,7 +280,7 @@ namespace ScottPlot
         /// <summary>
         /// Automatically adjust axis limits for all axes which have not yet been set
         /// </summary>
-        public void AxisAutoUnsetAxes()
+        public void AxisAutoUnsetAxes(double? horizontalMargin = null, double? verticalMargin = null)
         {
             Axis[] unsetAxesX = HorizontalAxes
                 .Where(x => !x.Dims.HasBeenSet && x.Dims.IsNan)
@@ -298,12 +298,12 @@ namespace ScottPlot
 
             foreach (Axis xAxis in unsetAxesX)
             {
-                AxisAutoX(xAxis.AxisIndex);
+                AxisAutoX(xAxis.AxisIndex, horizontalMargin);
             }
 
             foreach (Axis yAxis in unsetAxesY)
             {
-                AxisAutoY(yAxis.AxisIndex);
+                AxisAutoY(yAxis.AxisIndex, verticalMargin);
             }
         }
 
@@ -364,7 +364,7 @@ namespace ScottPlot
         /// <summary>
         /// Automatically adjust X axis limits to fit the data
         /// </summary>
-        public void AxisAutoAllX(double margin = .1)
+        public void AxisAutoAllX(double? margin = null)
         {
             int[] xAxisIndexes = Axes.Where(x => x.IsHorizontal).Select(x => x.AxisIndex).Distinct().ToArray();
             foreach (int i in xAxisIndexes)
@@ -374,18 +374,17 @@ namespace ScottPlot
         /// <summary>
         /// Automatically adjust Y axis limits to fit the data
         /// </summary>
-        public void AxisAutoAllY(double margin = .1)
+        public void AxisAutoAllY(double? margin = null)
         {
             int[] yAxisIndexes = Axes.Where(x => x.IsVertical).Select(x => x.AxisIndex).Distinct().ToArray();
             foreach (int i in yAxisIndexes)
                 AxisAutoY(i, margin);
         }
 
-        public void AxisAutoX(int xAxisIndex, double margin = .1)
+        public void AxisAutoX(int xAxisIndex, double? margin = null)
         {
-            double min = double.NaN;
-            double max = double.NaN;
-            double zoomFrac = 1 - margin;
+            if (margin.HasValue)
+                MarginsX = margin.Value;
 
             var plottableLimits = Plottables.Where(x => x is IPlottable)
                                                .Select(x => (IPlottable)x)
@@ -394,6 +393,8 @@ namespace ScottPlot
                                                .Select(x => x.GetAxisLimits())
                                                .ToArray();
 
+            double min = double.NaN;
+            double max = double.NaN;
             foreach (var limits in plottableLimits)
             {
                 if (!double.IsNaN(limits.XMin))
@@ -407,14 +408,15 @@ namespace ScottPlot
 
             var xAxis = GetXAxis(xAxisIndex);
             xAxis.Dims.SetAxis(min, max);
+
+            double zoomFrac = 1 - MarginsX;
             xAxis.Dims.Zoom(zoomFrac);
         }
 
-        public void AxisAutoY(int yAxisIndex, double margin = .1)
+        public void AxisAutoY(int yAxisIndex, double? margin = null)
         {
-            double min = double.NaN;
-            double max = double.NaN;
-            double zoomFrac = 1 - margin;
+            if (margin.HasValue)
+                MarginsY = margin.Value;
 
             var plottableLimits = Plottables.Where(x => x is IPlottable)
                                                .Select(x => (IPlottable)x)
@@ -423,6 +425,8 @@ namespace ScottPlot
                                                .Select(x => x.GetAxisLimits())
                                                .ToArray();
 
+            double min = double.NaN;
+            double max = double.NaN;
             foreach (var limits in plottableLimits)
             {
                 if (!double.IsNaN(limits.YMin))
@@ -436,6 +440,8 @@ namespace ScottPlot
 
             var yAxis = GetYAxis(yAxisIndex);
             yAxis.Dims.SetAxis(min, max);
+
+            double zoomFrac = 1 - MarginsY;
             yAxis.Dims.Zoom(zoomFrac);
         }
 
@@ -500,12 +506,22 @@ namespace ScottPlot
 
             if (finalize)
             {
-                double x1 = XAxis.Dims.GetUnit(left);
-                double x2 = XAxis.Dims.GetUnit(right);
-                double y1 = YAxis.Dims.GetUnit(bottom);
-                double y2 = YAxis.Dims.GetUnit(top);
                 ZoomRectangle.Clear();
-                AxisSet(x1, x2, y1, y2);
+                foreach (Axis axis in Axes)
+                {
+                    if (axis.IsHorizontal)
+                    {
+                        double x1 = axis.Dims.GetUnit(left);
+                        double x2 = axis.Dims.GetUnit(right);
+                        axis.Dims.SetAxis(x1, x2);
+                    }
+                    else
+                    {
+                        double y1 = axis.Dims.GetUnit(bottom);
+                        double y2 = axis.Dims.GetUnit(top);
+                        axis.Dims.SetAxis(y1, y2);
+                    }
+                }
             }
             else
             {

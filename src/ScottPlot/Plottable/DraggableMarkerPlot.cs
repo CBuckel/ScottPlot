@@ -171,17 +171,14 @@ namespace ScottPlot.Plottable
             }
         }
 
-        public void Render(PlotDimensions dims, Bitmap bmp, bool lowQuality = false)
+        public void Render(PlotDimensions dims, Graphics gfx)
         {
             if (!IsVisible)
                 return;
 
-            using (var gfx = GDI.Graphics(bmp, dims, lowQuality))
-            {
-                PointF point = new PointF(dims.GetPixelX(Xs[CurrentIndex]), dims.GetPixelY(Ys[CurrentIndex]));
+            PointF point = new PointF(dims.GetPixelX(Xs[CurrentIndex]), dims.GetPixelY(Ys[CurrentIndex]));
 
-                MarkerTools.DrawMarker(gfx, point, MarkerShape, (float)MarkerSize, Color);
-            }
+            MarkerTools.DrawMarker(gfx, point, MarkerShape, (float)MarkerSize, Color);
         }
 
         /// <summary>

@@ -155,20 +155,19 @@ namespace ScottPlot.Plottable
                 throw new NullReferenceException(nameof(PositionFormatter));
         }
 
-        public void Render(PlotDimensions dims, Bitmap bmp, bool lowQuality = false)
+        public void Render(PlotDimensions dims, Graphics gfx)
         {
             if (!IsVisible)
                 return;
 
-            RenderLine(dims, bmp, lowQuality);
+            RenderLine(dims, gfx);
 
             if (PositionLabel)
-                RenderPositionLabel(dims, bmp, lowQuality);
+                RenderPositionLabel(dims, gfx);
         }
 
-        public void RenderLine(PlotDimensions dims, Bitmap bmp, bool lowQuality)
+        public void RenderLine(PlotDimensions dims, Graphics gfx)
         {
-            var gfx = GDI.Graphics(bmp, dims, lowQuality);
             var pen = GDI.Pen(Color, 2 * LineWidth, LineStyle, true);
             var pen2 = GDI.Pen(Color, LineWidth, LineStyle, true);
 
@@ -217,9 +216,8 @@ namespace ScottPlot.Plottable
             }
         }
 
-        private void RenderPositionLabel(PlotDimensions dims, Bitmap bmp, bool lowQuality)
+        private void RenderPositionLabel(PlotDimensions dims, Graphics gfx)
         {
-            var gfx = GDI.Graphics(bmp, dims, lowQuality, clipToDataArea: false);
             var pen = GDI.Pen(Color, LineWidth, LineStyle, true);
 
             var fnt = GDI.Font(PositionLabelFont);
